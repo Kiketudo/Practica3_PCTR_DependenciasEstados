@@ -7,6 +7,8 @@ public class Parque implements IParque{
 
 
 	// TODO 
+	static final long MIN = 0; // mínimo valor permitido
+	static final long MAX = 40; // máximo valor permitido
 	private int contadorPersonasTotales;
 	private Hashtable<String, Integer> contadoresPersonasPuerta;
 	
@@ -19,14 +21,19 @@ public class Parque implements IParque{
 
 
 	@Override
-	public void entrarAlParque(String puerta){		// TODO
+	public synchronized void entrarAlParque(String puerta){		// TODO
 		
 		// Si no hay entradas por esa puerta, inicializamos
 		if (contadoresPersonasPuerta.get(puerta) == null){
 			contadoresPersonasPuerta.put(puerta, 0);
 		}
 		
-		// TODO
+		try {
+			comprobarAntesDeEntrar();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 				
 		
 		// Aumentamos el contador total y el individual
@@ -35,8 +42,8 @@ public class Parque implements IParque{
 		
 		// Imprimimos el estado del parque
 		imprimirInfo(puerta, "Entrada");
-		
-		// TODO
+		checkInvariante();
+		notifyAll();
 		
 		
 		// TODO
@@ -45,7 +52,25 @@ public class Parque implements IParque{
 	
 	// 
 	// TODO MÃ©todo salirDelParque
-	//
+	public synchronized void salirDelParque(String puerta) {
+		if (contadoresPersonasPuerta.get(puerta) == null){
+			contadoresPersonasPuerta.put(puerta, 0);
+		}
+		try {
+			comprobarAntesDeSalir();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// Aumentamos el contador total y el individual
+				contadorPersonasTotales--;		
+				contadoresPersonasPuerta.put(puerta, contadoresPersonasPuerta.get(puerta)-1);
+				
+				// Imprimimos el estado del parque
+				imprimirInfo(puerta, "Salida");
+				checkInvariante();
+				notifyAll();
+	}
 	
 	
 	private void imprimirInfo (String puerta, String movimiento){
@@ -74,16 +99,20 @@ public class Parque implements IParque{
 		// TODO
 	}
 
-	protected void comprobarAntesDeEntrar(){	// TODO
+	protected void comprobarAntesDeEntrar() throws InterruptedException{	// TODO
 		//
 		// TODO
-		//
+		while(contadorPersonasTotales == MAX) {
+			wait();
+		}
 	}
 
-	protected void comprobarAntesDeSalir(){		// TODO
+	protected void comprobarAntesDeSalir() throws InterruptedException{		// TODO
 		//
 		// TODO
-		//
+		while(contadorPersonasTotales == MIN) {
+			wait();
+		}
 	}
 
 
